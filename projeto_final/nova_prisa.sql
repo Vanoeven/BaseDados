@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Jun 09, 2017 at 06:00 PM
+-- Generation Time: Jun 09, 2017 at 06:26 PM
 -- Server version: 5.6.34-log
 -- PHP Version: 7.0.13
 
@@ -28,7 +28,8 @@ SET time_zone = "+00:00";
 
 CREATE TABLE IF NOT EXISTS `actividades` (
   `nome_act` varchar(255) NOT NULL,
-  `local_a` varchar(255) NOT NULL
+  `local_a` varchar(255) NOT NULL,
+  `pid` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -39,7 +40,8 @@ CREATE TABLE IF NOT EXISTS `actividades` (
 
 CREATE TABLE IF NOT EXISTS `bloco` (
   `bloco_id` int(11) NOT NULL,
-  `ncelas` int(11) NOT NULL
+  `ncelas` int(11) NOT NULL,
+  `morada` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -81,34 +83,12 @@ CREATE TABLE IF NOT EXISTS `guarda` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `participa_in`
---
-
-CREATE TABLE IF NOT EXISTS `participa_in` (
-  `pid` int(11) DEFAULT NULL,
-  `nome_act` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `patios`
 --
 
 CREATE TABLE IF NOT EXISTS `patios` (
   `bloco_id` int(11) NOT NULL,
-  `patio_id` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pertece_a`
---
-
-CREATE TABLE IF NOT EXISTS `pertece_a` (
-  `morada` varchar(255) DEFAULT NULL,
-  `bloco_id` int(11) DEFAULT NULL
+  `patio_id` int(11) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -136,7 +116,8 @@ CREATE TABLE IF NOT EXISTS `preso_in` (
   `pid` int(11) DEFAULT NULL,
   `morada` varchar(255) DEFAULT NULL,
   `bloco_id` int(11) DEFAULT NULL,
-  `celas_id` int(11) NOT NULL
+  `celas_id` int(11) NOT NULL,
+  `id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -161,7 +142,8 @@ CREATE TABLE IF NOT EXISTS `turno` (
   `gid` int(11) DEFAULT NULL,
   `nome_act` varchar(255) DEFAULT NULL,
   `bloco_id` int(11) DEFAULT NULL,
-  `nguardas` int(11) DEFAULT NULL
+  `nguardas` int(11) DEFAULT NULL,
+  `id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -173,7 +155,8 @@ CREATE TABLE IF NOT EXISTS `turno` (
 CREATE TABLE IF NOT EXISTS `works_in` (
   `morada` varchar(255) DEFAULT NULL,
   `gid` int(11) DEFAULT NULL,
-  `treino` varchar(255) DEFAULT NULL
+  `treino` varchar(255) DEFAULT NULL,
+  `id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -184,13 +167,16 @@ CREATE TABLE IF NOT EXISTS `works_in` (
 -- Indexes for table `actividades`
 --
 ALTER TABLE `actividades`
-  ADD PRIMARY KEY (`nome_act`);
+  ADD PRIMARY KEY (`nome_act`),
+  ADD KEY `pid` (`pid`);
 
 --
 -- Indexes for table `bloco`
 --
 ALTER TABLE `bloco`
-  ADD PRIMARY KEY (`bloco_id`);
+  ADD PRIMARY KEY (`ncelas`),
+  ADD KEY `morada` (`morada`),
+  ADD KEY `bloco_id` (`bloco_id`);
 
 --
 -- Indexes for table `celas`
@@ -212,24 +198,11 @@ ALTER TABLE `guarda`
   ADD PRIMARY KEY (`gid`);
 
 --
--- Indexes for table `participa_in`
---
-ALTER TABLE `participa_in`
-  ADD KEY `pid` (`pid`),
-  ADD KEY `nome_act` (`nome_act`);
-
---
 -- Indexes for table `patios`
 --
 ALTER TABLE `patios`
-  ADD PRIMARY KEY (`bloco_id`);
-
---
--- Indexes for table `pertece_a`
---
-ALTER TABLE `pertece_a`
-  ADD KEY `bloco_id` (`bloco_id`),
-  ADD KEY `morada` (`morada`);
+  ADD PRIMARY KEY (`patio_id`),
+  ADD KEY `bloco_id` (`bloco_id`);
 
 --
 -- Indexes for table `preso`
@@ -241,6 +214,7 @@ ALTER TABLE `preso`
 -- Indexes for table `preso_in`
 --
 ALTER TABLE `preso_in`
+  ADD PRIMARY KEY (`id`),
   ADD KEY `pid` (`pid`),
   ADD KEY `morada` (`morada`),
   ADD KEY `bloco_id` (`bloco_id`);
@@ -255,6 +229,7 @@ ALTER TABLE `prisao`
 -- Indexes for table `turno`
 --
 ALTER TABLE `turno`
+  ADD PRIMARY KEY (`id`),
   ADD KEY `gid` (`gid`),
   ADD KEY `nome_act` (`nome_act`),
   ADD KEY `bloco_id` (`bloco_id`);
@@ -263,12 +238,44 @@ ALTER TABLE `turno`
 -- Indexes for table `works_in`
 --
 ALTER TABLE `works_in`
+  ADD PRIMARY KEY (`id`),
   ADD KEY `gid` (`gid`),
   ADD KEY `morada` (`morada`);
 
 --
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `preso_in`
+--
+ALTER TABLE `preso_in`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `turno`
+--
+ALTER TABLE `turno`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `works_in`
+--
+ALTER TABLE `works_in`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `actividades`
+--
+ALTER TABLE `actividades`
+  ADD CONSTRAINT `actividades_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `preso` (`pid`);
+
+--
+-- Constraints for table `bloco`
+--
+ALTER TABLE `bloco`
+  ADD CONSTRAINT `bloco_ibfk_1` FOREIGN KEY (`morada`) REFERENCES `prisao` (`morada`);
 
 --
 -- Constraints for table `celas`
@@ -284,24 +291,10 @@ ALTER TABLE `disfruta`
   ADD CONSTRAINT `disfruta_ibfk_2` FOREIGN KEY (`bloco_id`) REFERENCES `bloco` (`bloco_id`);
 
 --
--- Constraints for table `participa_in`
---
-ALTER TABLE `participa_in`
-  ADD CONSTRAINT `participa_in_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `preso` (`pid`),
-  ADD CONSTRAINT `participa_in_ibfk_2` FOREIGN KEY (`nome_act`) REFERENCES `actividades` (`nome_act`);
-
---
 -- Constraints for table `patios`
 --
 ALTER TABLE `patios`
   ADD CONSTRAINT `patios_ibfk_1` FOREIGN KEY (`bloco_id`) REFERENCES `bloco` (`bloco_id`);
-
---
--- Constraints for table `pertece_a`
---
-ALTER TABLE `pertece_a`
-  ADD CONSTRAINT `pertece_a_ibfk_1` FOREIGN KEY (`bloco_id`) REFERENCES `bloco` (`bloco_id`),
-  ADD CONSTRAINT `pertece_a_ibfk_2` FOREIGN KEY (`morada`) REFERENCES `prisao` (`morada`);
 
 --
 -- Constraints for table `preso_in`
